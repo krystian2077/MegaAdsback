@@ -5,7 +5,7 @@ export interface NewAdEntity extends Omit<AdEntity, "id"> {
 export interface SimpleAddEntity {
   id: string;
   lat: number;
-  lon: number;
+  lot: number;
 }
 
 export interface AdEntity extends SimpleAddEntity {

@@ -2,6 +2,7 @@ import { AdEntity, NewAdEntity, SimpleAddEntity } from "../types";
 import { ValidationError } from "../utils/errors";
 import { pool } from "../utils/db";
 import { FieldPacket } from "mysql2";
+import { v4 as uuid } from "uuid";
 
 type AddRecordResults = [AdEntity[], FieldPacket[]];
 
@@ -12,7 +13,7 @@ export class AddRecord implements AdEntity {
   price: number;
   url: string;
   lat: number;
-  lon: number;
+  lot: number;
 
   constructor(obj: NewAdEntity) {
     if (!obj.name || obj.name.length > 100) {
@@ -48,7 +49,7 @@ export class AddRecord implements AdEntity {
     this.description = obj.description;
     this.price = obj.price;
     this.lat = obj.lat;
-    this.lon = obj.lon;
+    this.lot = obj.lot;
   }
 
   static async getOne(id: string): Promise<AddRecord | null> {
@@ -70,8 +71,22 @@ export class AddRecord implements AdEntity {
       }
     )) as AddRecordResults;
     return results.map((result) => {
-      const { id, lat, lon } = result;
-      return { id, lat, lon };
+      const { id, lat, lot } = result;
+      return { id, lat, lot };
     });
+  }
+
+  async insert(): Promise<void> {
+    if (!this.id) {
+      this.id = uuid();
+    } else {
+      throw new Error("Cannot insert sth that is already exists");
+    }
+
+    await pool.execute(
+      "INSERT INTO `ads`(`id`, `name`, `description`, `price`, `url`, `lat`, `lot`) VALUES(:id, :name, :description," +
+        " :price, :url, :lat, :lon)",
+      this
+    );
   }
 }

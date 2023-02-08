@@ -7,8 +7,7 @@ test("Can build AddRecord", () => {
     url: "fwfhiuoew",
     price: 10,
     lat: 9,
-    lon: 9,
+    lot: 9,
   });
   expect(add.name).toBe("TestName");
 });
-
