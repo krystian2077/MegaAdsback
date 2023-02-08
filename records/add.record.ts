@@ -1,4 +1,4 @@
-import { AdEntity, NewAdEntity } from "../types";
+import { AdEntity, NewAdEntity, SimpleAddEntity } from "../types";
 import { ValidationError } from "../utils/errors";
 import { pool } from "../utils/db";
 import { FieldPacket } from "mysql2";
@@ -39,9 +39,10 @@ export class AddRecord implements AdEntity {
       );
     }
 
-    if (typeof obj.lat !== "number" || typeof obj.lon !== "number") {
-      throw new ValidationError("Nie można zlokalizować ogłoszenia.");
-    }
+    // if (typeof obj.lat !== "number" || typeof obj.lon !== "number") {
+    //   throw new ValidationError("Nie można zlokalizować ogłoszenia.");
+    // }
+
     this.id = obj.id;
     this.name = obj.name;
     this.description = obj.description;
@@ -59,5 +60,18 @@ export class AddRecord implements AdEntity {
     )) as AddRecordResults;
 
     return results.length === 0 ? null : new AddRecord(results[0]);
+  }
+
+  static async findAll(name: string): Promise<SimpleAddEntity[]> {
+    const [results] = (await pool.execute(
+      "SELECT * FROM `ads` WHERE `name` LIKE :search",
+      {
+        search: `%${name}%`,
+      }
+    )) as AddRecordResults;
+    return results.map((result) => {
+      const { id, lat, lon } = result;
+      return { id, lat, lon };
+    });
   }
 }
