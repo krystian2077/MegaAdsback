@@ -10,9 +10,9 @@ const defaultObj = {
   name: "Test",
   description: "blah",
   url: "https://testowy.com",
-  price: 0,
+  price: 4,
   lat: 9,
-  lot: 9,
+  lon: 9,
 };
 
 test("AdRecord returns data from database", async () => {

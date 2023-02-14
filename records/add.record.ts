@@ -1,4 +1,4 @@
-import { AdEntity, NewAdEntity, SimpleAddEntity } from "../types";
+import { AdEntity, NewAdEntity, SimpleAdEntity } from "../types";
 import { ValidationError } from "../utils/errors";
 import { pool } from "../utils/db";
 import { FieldPacket } from "mysql2";
@@ -7,36 +7,36 @@ import { v4 as uuid } from "uuid";
 type AddRecordResults = [AdEntity[], FieldPacket[]];
 
 export class AddRecord implements AdEntity {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  url: string;
-  lat: number;
-  lot: number;
-
+  public id: string;
+  public name: string;
+  public description: string;
+  public price: number;
+  public url: string;
+  public lat: number;
+  public lon: number;
   constructor(obj: NewAdEntity) {
     if (!obj.name || obj.name.length > 100) {
       throw new ValidationError(
-        "Nazwa ogłoszenia nie może być pusta, ani przekraczać 100 znaków"
+        "Nazwa ogłoszenia nie może być pusta, ani przekraczać 100 znaków."
       );
     }
 
     if (obj.description.length > 1000) {
       throw new ValidationError(
-        "Treść ogłoszenia nie może przekraczać 1000 znaków"
+        "Treść ogłoszenia nie może przekraczać 1000 znaków."
       );
     }
 
     if (obj.price < 0 || obj.price > 9999999) {
       throw new ValidationError(
-        "Cena nie może być mniejsza niż 0 lub większa niż 9 999 999"
+        "Cena nie może być mniejsza niż 0 lub większa niż 9 999 999."
       );
     }
 
+    // @TODO: Check if URL is valid!
     if (!obj.url || obj.url.length > 100) {
       throw new ValidationError(
-        "Adres ogłoszenia nie może być pusty, ani przekraczać 100 znaków"
+        "Link ogłoszenia nie może być pusty, ani przekraczać 100 znaków."
       );
     }
 
@@ -48,13 +48,13 @@ export class AddRecord implements AdEntity {
     this.name = obj.name;
     this.description = obj.description;
     this.price = obj.price;
+    this.url = obj.url;
     this.lat = obj.lat;
-    this.lot = obj.lot;
+    this.lon = obj.lon;
   }
-
   static async getOne(id: string): Promise<AddRecord | null> {
     const [results] = (await pool.execute(
-      "SELECT * FROM `ads` WHERE id = :id",
+      "SELECT * FROM `ads` WHERE `id` = :id",
       {
         id,
       }
@@ -63,16 +63,23 @@ export class AddRecord implements AdEntity {
     return results.length === 0 ? null : new AddRecord(results[0]);
   }
 
-  static async findAll(name: string): Promise<SimpleAddEntity[]> {
+  static async findAll(name: string): Promise<SimpleAdEntity[]> {
     const [results] = (await pool.execute(
       "SELECT * FROM `ads` WHERE `name` LIKE :search",
       {
         search: `%${name}%`,
       }
     )) as AddRecordResults;
+
     return results.map((result) => {
-      const { id, lat, lot } = result;
-      return { id, lat, lot };
+      const { id, name, lat, lon } = result;
+
+      return {
+        id,
+        name,
+        lat,
+        lon,
+      };
     });
   }
 
@@ -80,12 +87,11 @@ export class AddRecord implements AdEntity {
     if (!this.id) {
       this.id = uuid();
     } else {
-      throw new Error("Cannot insert sth that is already exists");
+      throw new Error("Cannot insert something that is already inserted!");
     }
 
     await pool.execute(
-      "INSERT INTO `ads`(`id`, `name`, `description`, `price`, `url`, `lat`, `lot`) VALUES(:id, :name, :description," +
-        " :price, :url, :lat, :lon)",
+      "INSERT INTO `ads`(`id`, `name`, `description`, `price`, `url`, `lat`, `lon`) VALUES(:id, :name, :description, :price, :url, :lat, :lon)",
       this
     );
   }

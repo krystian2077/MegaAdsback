@@ -2,13 +2,13 @@ export interface NewAdEntity extends Omit<AdEntity, "id"> {
   id?: string;
 }
 
-export interface SimpleAddEntity {
+export interface SimpleAdEntity {
   id: string;
   lat: number;
-  lot: number;
+  lon: number;
 }
 
-export interface AdEntity extends SimpleAddEntity {
+export interface AdEntity extends SimpleAdEntity {
   name: string;
   description: string;
   price: number;
