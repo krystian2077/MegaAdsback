@@ -22,7 +22,7 @@ app.use(
 );
 
 //Routes
-app.use("/api/add", adRouter);
+app.use("/add", adRouter);
 
 app.use(handleError);
 
